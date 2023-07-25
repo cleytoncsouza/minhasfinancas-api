@@ -3,6 +3,7 @@ package br.estudos.minhasfinancas.service.impl;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import br.estudos.minhasfinancas.exception.RegraNegocioException;
 import br.estudos.minhasfinancas.model.entity.Lancamento;
 import br.estudos.minhasfinancas.model.enums.StatusLancamento;
+import br.estudos.minhasfinancas.model.enums.TipoLancamento;
 import br.estudos.minhasfinancas.model.repository.LancamentoRepository;
 import br.estudos.minhasfinancas.service.LancamentoService;
 
@@ -87,6 +89,27 @@ public class LancamentoServiceImpl implements LancamentoService{
 			throw new RegraNegocioException("Informe um tipo de lançamento");
 		}
 		
+	}
+
+	public Lancamento obterPeloId(Long id) {
+		Optional<Lancamento> resultado = repository.findById(id);
+		
+		if (resultado.isEmpty())
+			throw new RegraNegocioException("Lancamento não encontrado");
+		
+		return resultado.get();
+	}
+
+	@Transactional(readOnly = true)
+	public BigDecimal obterSaldoPorUsuario(Long idUsuario) {
+		BigDecimal receita = repository.obterSaldoPorTipoLancamentoEUsuario(idUsuario, TipoLancamento.RECEITA);
+		BigDecimal despesa = repository.obterSaldoPorTipoLancamentoEUsuario(idUsuario, TipoLancamento.DESPESA);
+		if (receita != null)
+			return receita.subtract(despesa);
+		else if (despesa != null)
+			return despesa.negate();
+		else
+			throw new RegraNegocioException("não há lancamentos para esse usuário");
 	}
 
 }

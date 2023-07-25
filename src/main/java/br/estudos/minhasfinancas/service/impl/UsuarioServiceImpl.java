@@ -45,6 +45,17 @@ public class UsuarioServiceImpl implements UsuarioService{
 			throw new RegraNegocioException("Usuário duplicado");
 		return jaExiste;
 	}
+
+	public Usuario obterPorId(Long id) {
+		
+		Optional<Usuario> resultado = repository.findById(id);
+		
+		
+		if (resultado.isEmpty())
+			throw new RegraNegocioException("Usuário não encontrado");
+		
+		return resultado.get();
+	}
  
 	
 	
